@@ -1,26 +1,25 @@
 ---
-- include: preflight.yml
-  tags:
-    - alertmanager_install
-    - alertmanager_configure
-    - alertmanager_run
-
-- include: install.yml
+- block:
+    - name: include preflight
+      include_tasks: preflight.yml
+      tags:
+        - alertmanager_install
+        - alertmanager_configure
+        - alertmanager_run
+    - name: include install
+      include_tasks: install.yml
+      tags:
+        - alertmanager_install
+    - name: selinux
+      import_tasks: selinux.yml
+      when: ansible_selinux.status == "enabled"
+      tags:
+        - alertmanager_configure
+    - name: include configure
+      include_tasks: configure.yml
+      tags:
+        - alertmanager_configure
   become: true
-  tags:
-    - alertmanager_install
-
-- import_tasks: selinux.yml
-  become: true
-  when: ansible_selinux.status == "enabled"
-  tags:
-    - alertmanager_configure
-
-- include: configure.yml
-  become: true
-  tags:
-    - alertmanager_configure
-
 - name: ensure alertmanager service is started and enabled
   become: true
   systemd:
